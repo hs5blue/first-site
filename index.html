@@ -1,134 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cute Game for Nahin 💖</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoolove Memory — For Nahin 💖</title>
   <style>
-    body {
-      margin: 0;
-      background: linear-gradient(to bottom, #ffd6e8, #fff5f7);
-      overflow: hidden;
-      font-family: "Comic Sans MS", cursive, sans-serif;
-      text-align: center;
+    :root{
+      --bg1:#fff6fb; --bg2:#e9f9ff; --primary:#ff66a3; --accent:#7ad1ff; --text:#5b4b54; --win:#ff7f50;
     }
-    canvas {
-      display: block;
-      margin: auto;
-      background: linear-gradient(to top, #ffe9f0, #fff);
-      border: 4px solid pink;
-      border-radius: 20px;
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 20% 10%, var(--bg1), transparent),
+                  radial-gradient(1200px 800px at 80% 90%, var(--bg2), transparent),
+                  linear-gradient(180deg, #ffffff, #fdf7ff 60%);
+      color:var(--text);
+      min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    h1 {
-      color: #d63384;
+    .game{
+      width:min(900px, 96vw); max-width:900px;
+      background:#fff; border:3px solid #ffd2e7; border-radius:24px; box-shadow:0 20px 50px rgba(255,102,163,.15);
+      padding:18px 18px 26px; position:relative;
     }
+    header{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap}
+    h1{margin:6px 0 8px; font-size:clamp(22px, 3vw, 30px); color:var(--primary)}
+    .subtitle{font-size:14px; opacity:.9}
+    .hud{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .pill{
+      background:linear-gradient( to right, #ffe3f1, #e8f7ff); border:1.5px solid #ffd2e7; border-radius:999px; padding:8px 12px; font-weight:600;
+    }
+    button{
+      border:none; background: linear-gradient(135deg, var(--primary), #ff97c0); color:white; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer; box-shadow:0 8px 18px rgba(255,102,163,.25); transition: transform .05s ease;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .grid{ 
+      margin-top:16px; 
+      display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; 
+    }
+    @media (min-width:720px){ .grid{ grid-template-columns: repeat(6, 1fr);} }
+
+    .card{
+      width:100%; aspect-ratio: 3/4; perspective: 900px; 
+    }
+    .inner{
+      position:relative; width:100%; height:100%; transform-style:preserve-3d;
+      transition: transform 400ms; cursor:pointer;
+    }
+    .inner.flipped{ transform: rotateY(180deg); }
+    .face{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:18px; border:2px solid #ffd2e7;
+      backface-visibility:hidden; -webkit-backface-visibility:hidden; box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), 0 10px 20px rgba(0,0,0,.05);
+    }
+    .front{
+      background:linear-gradient(180deg,#fff6fb,#fff); font-size: clamp(36px, 6vw, 52px);
+      transform: rotateY(180deg);
+    }
+    .back{
+      background: radial-gradient(circle at 30% 20%, #ffe9f4, #e7f6ff);
+      font-size: clamp(22px, 5vw, 34px); color:#ff469b; letter-spacing:2px; font-weight:900;
+    }
+
+    .toast{
+      position:fixed; left:50%; top:18px; transform: translateX(-50%);
+      background:#ffffff; border:2px solid #ffd2e7; border-radius:999px; padding:10px 16px; box-shadow:0 12px 30px rgba(0,0,0,.08);
+      opacity:0; pointer-events:none; transition: opacity .3s, transform .3s; font-weight:600;
+    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(4px); }
+
+    .modal{
+      position:fixed; inset:0; display:grid; place-items:center; background: rgba(255, 224, 238, .55); backdrop-filter: blur(4px);
+      opacity:0; pointer-events:none; transition: opacity .25s ease;
+    }
+    .modal.open{ opacity:1; pointer-events:auto; }
+    .card-win{
+      width:min(560px, 92vw); background:#fff; border:3px solid #ffd2e7; border-radius:22px; padding:20px; text-align:center; box-shadow:0 20px 50px rgba(255,102,163,.18);
+    }
+    .big{ font-size: clamp(24px, 3.2vw, 30px); color:var(--win); margin:8px 0 4px; }
+    .msg{ font-size: clamp(16px, 2.4vw, 18px); }
   </style>
 </head>
 <body>
-  <h1>For My Love Nahin 💕</h1>
-  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div class="game" role="application" aria-label="Zoolove Memory Game for Nahin">
+    <header>
+      <div>
+        <h1>🧠 Zoolove Memory — For Nahin</h1>
+        <div class="subtitle">Flip cards, match the animals, and unlock cute zoology love notes 💕</div>
+      </div>
+      <div class="hud">
+        <div class="pill" id="moves">Moves: 0</div>
+        <div class="pill" id="time">Time: 0s</div>
+        <button id="restart">Restart</button>
+      </div>
+    </header>
+
+    <div class="grid" id="grid" aria-live="polite"></div>
+  </div>
+
+  <div class="toast" id="toast">You matched 🦋 — "You make my heart flutter, Nahin!"</div>
+
+  <div class="modal" id="winModal" aria-modal="true" role="dialog">
+    <div class="card-win">
+      <div style="font-size:48px">✨💖✨</div>
+      <div class="big">All pairs matched!</div>
+      <p class="msg" id="finalMsg">Nahin, you’re my favorite finding in the entire animal kingdom. 🐾 Forever yours. </p>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+        <button id="playAgain">Play again</button>
+        <button id="shareBtn" title="Copy a sweet message to share">Copy love note</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let heart = { x: 180, y: 550, width: 40, height: 40 };
-    let animals = [];
-    let score = 0;
-    let messages = [
-      "You’re my butterfly, Nahin 🦋💖",
-      "You make my heart hop like a bunny 🐇💕",
-      "You’re the song of my bird, Nahin 🐦💘",
-      "My sweetest Zoologist 💕",
-      "Forever mine, Nahin ❤️"
+    // --- Game Data ---
+    const pairs = [
+      {emoji:'🦋', note:'You make my heart flutter, Nahin!'},
+      {emoji:'🐸', note:'I’m toad-ally into you!'},
+      {emoji:'🐝', note:'You’re the bee’s knees, my Zoologist.'},
+      {emoji:'🐢', note:'Slow or fast, I’ll match your pace.'},
+      {emoji:'🐼', note:'I can’t bear to be without you.'},
+      {emoji:'🐧', note:'Like penguins, I choose you for life.'},
+      {emoji:'🦊', note:'Fur real, you’re foxy and brilliant!'},
+      {emoji:'🐨', note:'I’m koala‑fied to love you forever.'}
     ];
-    let currentMsg = "";
 
-    function drawHeart(x, y) {
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.bezierCurveTo(x, y - 20, x - 25, y - 20, x - 25, y);
-      ctx.bezierCurveTo(x - 25, y + 20, x, y + 40, x, y + 50);
-      ctx.bezierCurveTo(x, y + 40, x + 25, y + 20, x + 25, y);
-      ctx.bezierCurveTo(x + 25, y - 20, x, y - 20, x, y);
-      ctx.fill();
+    const gridEl = document.getElementById('grid');
+    const movesEl = document.getElementById('moves');
+    const timeEl = document.getElementById('time');
+    const toastEl = document.getElementById('toast');
+    const restartBtn = document.getElementById('restart');
+    const winModal = document.getElementById('winModal');
+    const playAgainBtn = document.getElementById('playAgain');
+    const shareBtn = document.getElementById('shareBtn');
+
+    let deck = [];
+    let first = null, second = null, lock = false;
+    let moves = 0, matched = 0, startTime = null, timerId = null;
+
+    function shuffle(array){
+      for(let i=array.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
     }
 
-    function drawAnimal(animal) {
-      ctx.fillStyle = animal.color;
-      ctx.beginPath();
-      ctx.arc(animal.x, animal.y, animal.size, 0, Math.PI * 2);
-      ctx.fill();
+    function buildDeck(){
+      const doubled = pairs.flatMap((p,idx)=>[
+        {id: idx+ '-a', emoji:p.emoji, note:p.note},
+        {id: idx+ '-b', emoji:p.emoji, note:p.note}
+      ]);
+      // 16 cards by default; for wider screens we show all 16; for small, still fine.
+      return shuffle(doubled);
     }
 
-    function spawnAnimal() {
-      let colors = ["#ff69b4", "#ffb347", "#77dd77", "#779ecb"];
-      animals.push({
-        x: Math.random() * 360 + 20,
-        y: -20,
-        size: 15,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        speed: 2 + Math.random() * 2
+    function cardTemplate(card){
+      return `
+      <div class="card" data-id="${card.id}" aria-label="card" tabindex="0">
+        <div class="inner" data-emoji="${card.emoji}" data-note="${card.note}">
+          <div class="face back">N</div>
+          <div class="face front">${card.emoji}</div>
+        </div>
+      </div>`
+    }
+
+    function render(){
+      gridEl.innerHTML = deck.map(cardTemplate).join('');
+      // Paint back faces with letters that spell N A H I N across the deck subtly
+      const letters = ['N','A','H','I','N'];
+      [...gridEl.querySelectorAll('.back')].forEach((el,i)=>{ el.textContent = letters[i%letters.length]; });
+
+      // Attach events
+      gridEl.querySelectorAll('.card').forEach(cardEl=>{
+        cardEl.addEventListener('click', ()=> flip(cardEl));
+        cardEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); flip(cardEl);} });
       });
     }
 
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw heart
-      drawHeart(heart.x, heart.y);
-
-      // Move and draw animals
-      animals.forEach((animal, index) => {
-        animal.y += animal.speed;
-        drawAnimal(animal);
-
-        // Collision
-        if (
-          animal.x > heart.x - 25 &&
-          animal.x < heart.x + 25 &&
-          animal.y > heart.y - 10 &&
-          animal.y < heart.y + 40
-        ) {
-          animals.splice(index, 1);
-          score++;
-          currentMsg = messages[Math.floor(Math.random() * messages.length)];
-        }
-
-        // Remove animals if they fall
-        if (animal.y > 600) {
-          animals.splice(index, 1);
-        }
-      });
-
-      // Display score and message
-      ctx.fillStyle = "#d63384";
-      ctx.font = "20px Comic Sans MS";
-      ctx.fillText("Score: " + score, 10, 20);
-
-      if (currentMsg) {
-        ctx.fillText(currentMsg, 20, 50);
-      }
-
-      // Win message
-      if (score >= 10) {
-        ctx.fillStyle = "#ff1744";
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillText("I love you, Nahin ❤️", 70, 300);
-        return;
-      }
-
-      requestAnimationFrame(gameLoop);
+    function startTimer(){
+      startTime = Date.now();
+      timerId = setInterval(()=>{
+        const t = Math.floor((Date.now()-startTime)/1000);
+        timeEl.textContent = `Time: ${t}s`;
+      }, 500);
     }
 
-    // Controls
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft" && heart.x > 30) heart.x -= 20;
-      if (e.key === "ArrowRight" && heart.x < 370) heart.x += 20;
+    function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+    function showToast(text){
+      toastEl.textContent = text;
+      toastEl.classList.add('show');
+      setTimeout(()=> toastEl.classList.remove('show'), 1400);
+    }
+
+    function flip(cardEl){
+      if(lock) return;
+      const inner = cardEl.querySelector('.inner');
+      if(inner.classList.contains('matched') || inner.classList.contains('flipped')) return;
+
+      if(!startTime) startTimer();
+
+      inner.classList.add('flipped');
+      if(!first){ first = inner; return; }
+      if(first === inner) return; // clicking same
+
+      second = inner; lock = true; moves++; movesEl.textContent = `Moves: ${moves}`;
+
+      const a = first.getAttribute('data-emoji');
+      const b = second.getAttribute('data-emoji');
+
+      if(a===b){
+        // match
+        setTimeout(()=>{
+          first.classList.add('matched');
+          second.classList.add('matched');
+          const note = first.getAttribute('data-note');
+          showToast(`${a} ${note}`);
+          matched += 2; first=null; second=null; lock=false;
+          if(matched === deck.length){ win(); }
+        }, 280);
+      } else {
+        // no match
+        setTimeout(()=>{
+          first.classList.remove('flipped');
+          second.classList.remove('flipped');
+          first=null; second=null; lock=false;
+        }, 650);
+      }
+    }
+
+    function win(){
+      stopTimer();
+      const seconds = Math.floor((Date.now()-startTime)/1000);
+      const msg = `Nahin, you matched every pair in ${seconds}s with ${moves} moves. In the vast world of Zoology, you’re my most beautiful discovery. ❤️`;
+      document.getElementById('finalMsg').textContent = msg;
+      winModal.classList.add('open');
+    }
+
+    function restart(){
+      deck = buildDeck(); moves = 0; matched = 0; startTime = null; movesEl.textContent = 'Moves: 0'; timeEl.textContent='Time: 0s';
+      stopTimer();
+      render();
+    }
+
+    restart();
+
+    restartBtn.addEventListener('click', ()=>{ winModal.classList.remove('open'); restart(); });
+    playAgainBtn.addEventListener('click', ()=>{ winModal.classList.remove('open'); restart(); });
+
+    shareBtn.addEventListener('click', async ()=>{
+      const text = 'I just played your Zoolove Memory game and thought of you, Nahin ❤️';
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Love note copied! 💌');
+      } catch(e){ showToast('Copied a note to share! 💌'); }
     });
-
-    setInterval(spawnAnimal, 1000);
-    gameLoop();
   </script>
 </body>
 </html>
