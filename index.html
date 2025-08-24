@@ -1,239 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Welcome to Tic Tac Toe</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe - Red Black Yellow</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #1e1e2f, #2e2e3a);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      background-color: black;
+      font-family: Arial, sans-serif;
+      color: yellow;
     }
-
-    .hidden {
-      display: none;
-    }
-
-    /* Welcome Page */
-    .welcome {
-      text-align: center;
-      background-color: #f0f8ff;
-      padding: 50px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-
-    .welcome h1 {
-      color: #333;
-    }
-
-    .welcome button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #007bff;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    .welcome button:hover {
-      background-color: #0056b3;
-    }
-
-    /* Game Styles */
-    .container {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .game-container {
       text-align: center;
     }
-
     h1 {
-      color: #ffffffcc;
-      margin-bottom: 30px;
+      color: red;
     }
-
     .board {
       display: grid;
       grid-template-columns: repeat(3, 100px);
       grid-template-rows: repeat(3, 100px);
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 5px;
+      margin: 20px auto;
     }
-
     .cell {
-      width: 100px;
-      height: 100px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      font-size: 2.5rem;
-      color: #fff;
-      cursor: pointer;
-      transition: 0.3s;
-      border: 2px solid transparent;
-    }
-
-    .cell:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.05);
-      border: 2px solid #4fc3f7;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: yellow;
+      border: 3px solid red;
       display: flex;
-      justify-content: center;
       align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      visibility: hidden;
-      opacity: 0;
-      transition: 0.3s ease-in-out;
-    }
-
-    .modal.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .modal-content {
-      background: #2e2e3a;
-      color: white;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    .restart {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: #4fc3f7;
-      color: #000;
-      border: none;
-      border-radius: 8px;
+      justify-content: center;
+      font-size: 2em;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.3s;
+      color: black;
+      transition: transform 0.2s;
     }
-
-    .restart:hover {
-      background-color: #03a9f4;
+    .cell:hover {
+      transform: scale(1.1);
+      background-color: red;
+      color: yellow;
+    }
+    #status {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: red;
+      color: yellow;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: yellow;
+      color: black;
     }
   </style>
 </head>
 <body>
-
-  <!-- Welcome Page -->
-  <div class="welcome" id="welcomeSection">
-    <h1>Welcome to the Page!</h1>
-    <p>We’re glad you’re here.</p>
-    <button onclick="startGame()">Click Here</button>
-  </div>
-
-  <!-- Game Section -->
-  <div class="container hidden" id="gameSection">
+  <div class="game-container">
     <h1>Tic Tac Toe</h1>
-    <div class="board" id="board">
-      <button class="cell" data-index="0"></button>
-      <button class="cell" data-index="1"></button>
-      <button class="cell" data-index="2"></button>
-      <button class="cell" data-index="3"></button>
-      <button class="cell" data-index="4"></button>
-      <button class="cell" data-index="5"></button>
-      <button class="cell" data-index="6"></button>
-      <button class="cell" data-index="7"></button>
-      <button class="cell" data-index="8"></button>
-    </div>
-    <button class="restart" id="restartBtn">Restart</button>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal" id="modal">
-    <div class="modal-content" id="modalContent">
-      <!-- JS will populate -->
-    </div>
+    <div id="status">Player X's Turn</div>
+    <div class="board" id="board"></div>
+    <button onclick="resetGame()">Restart</button>
   </div>
 
   <script>
-    function startGame() {
-      document.getElementById("welcomeSection").classList.add("hidden");
-      document.getElementById("gameSection").classList.remove("hidden");
-    }
+    const boardElement = document.getElementById('board');
+    const statusElement = document.getElementById('status');
+    let board = Array(9).fill(null);
+    let currentPlayer = 'X';
+    let gameActive = true;
 
-    const cells = document.querySelectorAll(".cell");
-    const modal = document.getElementById("modal");
-    const modalContent = document.getElementById("modalContent");
-    const restartBtn = document.getElementById("restartBtn");
-
-    let currentPlayer = "X";
-    let gameState = ["", "", "", "", "", "", "", "", ""];
-    let isGameActive = true;
-
-    const winningCombos = [
-      [0,1,2], [3,4,5], [6,7,8],
-      [0,3,6], [1,4,7], [2,5,8],
-      [0,4,8], [2,4,6]
-    ];
-
-    function handleClick(e) {
-      const index = e.target.dataset.index;
-      if (gameState[index] || !isGameActive) return;
-
-      gameState[index] = currentPlayer;
-      e.target.textContent = currentPlayer;
-
-      if (checkWinner()) {
-        showModal(`${currentPlayer} Wins! 🎉`);
-        isGameActive = false;
-      } else if (gameState.every(cell => cell)) {
-        showModal("It's a Draw 😬");
-        isGameActive = false;
-      } else {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-      }
-    }
-
-    function checkWinner() {
-      return winningCombos.some(combo => {
-        const [a, b, c] = combo;
-        return gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c];
+    function createBoard() {
+      boardElement.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellDiv = document.createElement('div');
+        cellDiv.classList.add('cell');
+        cellDiv.dataset.index = index;
+        cellDiv.textContent = cell || '';
+        cellDiv.addEventListener('click', handleMove);
+        boardElement.appendChild(cellDiv);
       });
     }
 
-    function showModal(message) {
-      modalContent.innerHTML = `
-        <h2>${message}</h2>
-        <button class="restart" onclick="restartGame()">Play Again</button>
-      `;
-      modal.classList.add("show");
+    function handleMove(e) {
+      const index = e.target.dataset.index;
+      if (!gameActive || board[index]) return;
+
+      board[index] = currentPlayer;
+      e.target.textContent = currentPlayer;
+
+      if (checkWinner()) {
+        statusElement.textContent = `Player ${currentPlayer} Wins!`;
+        gameActive = false;
+        return;
+      }
+
+      if (isDraw()) {
+        // Instead of a draw, randomly restart
+        statusElement.textContent = "Almost a draw! Restarting randomly...";
+        setTimeout(resetGame, 1500);
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      statusElement.textContent = `Player ${currentPlayer}'s Turn`;
     }
 
-    function restartGame() {
-      gameState = ["", "", "", "", "", "", "", "", ""];
-      currentPlayer = "X";
-      isGameActive = true;
-      cells.forEach(cell => cell.textContent = "");
-      modal.classList.remove("show");
+    function checkWinner() {
+      const winPatterns = [
+        [0,1,2], [3,4,5], [6,7,8], // rows
+        [0,3,6], [1,4,7], [2,5,8], // cols
+        [0,4,8], [2,4,6]           // diagonals
+      ];
+      return winPatterns.some(pattern => {
+        const [a,b,c] = pattern;
+        return board[a] && board[a] === board[b] && board[a] === board[c];
+      });
     }
 
-    cells.forEach(cell => cell.addEventListener("click", handleClick));
-    restartBtn.addEventListener("click", restartGame);
+    function isDraw() {
+      return board.every(cell => cell) && !checkWinner();
+    }
+
+    function resetGame() {
+      board = Array(9).fill(null);
+      // Randomly pick X or O to start
+      currentPlayer = Math.random() < 0.5 ? 'X' : 'O';
+      gameActive = true;
+      statusElement.textContent = `Player ${currentPlayer}'s Turn`;
+      createBoard();
+    }
+
+    resetGame(); // Start game with random player on first load
   </script>
 </body>
 </html>
