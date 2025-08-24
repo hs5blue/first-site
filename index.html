@@ -10,15 +10,20 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: black;
+      background: linear-gradient(135deg, black, red, yellow);
       font-family: Arial, sans-serif;
       color: yellow;
     }
     .game-container {
       text-align: center;
+      background: rgba(0,0,0,0.6);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255,255,0,0.6);
     }
     h1 {
       color: red;
+      text-shadow: 2px 2px black;
     }
     .board {
       display: grid;
@@ -26,9 +31,12 @@
       grid-template-rows: repeat(3, 100px);
       gap: 5px;
       margin: 20px auto;
+      background: linear-gradient(135deg, yellow, red);
+      padding: 8px;
+      border-radius: 12px;
     }
     .cell {
-      background-color: yellow;
+      background: linear-gradient(135deg, yellow, black);
       border: 3px solid red;
       display: flex;
       align-items: center;
@@ -37,29 +45,38 @@
       font-weight: bold;
       cursor: pointer;
       color: black;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+      user-select: none;
+      border-radius: 10px;
     }
     .cell:hover {
-      transform: scale(1.1);
-      background-color: red;
+      transform: scale(1.06);
+      background: linear-gradient(135deg, red, black);
       color: yellow;
+    }
+    .cell.removed {
+      outline: 3px dashed black;
+      background: linear-gradient(135deg, black, red) !important;
+      color: yellow !important;
     }
     #status {
       font-size: 1.2em;
       margin-top: 10px;
+      text-shadow: 1px 1px black;
     }
     button {
       margin-top: 15px;
       padding: 10px 20px;
-      background: red;
-      color: yellow;
+      background: linear-gradient(135deg, red, yellow);
+      color: black;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
+      box-shadow: 0 0 8px rgba(255,255,0,0.7);
     }
     button:hover {
-      background: yellow;
+      background: linear-gradient(135deg, yellow, red);
       color: black;
     }
   </style>
@@ -105,9 +122,11 @@
       }
 
       if (isDraw()) {
-        // Instead of a draw, randomly restart
-        statusElement.textContent = "Almost a draw! Restarting randomly...";
-        setTimeout(resetGame, 1500);
+        // Draw rule: randomly remove one existing X or O, then continue
+        randomRemoveOne();
+        // Switch turn to the other player after the draw-avoid action
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        statusElement.textContent += ` Player ${currentPlayer}'s Turn`;
         return;
       }
 
@@ -129,6 +148,20 @@
 
     function isDraw() {
       return board.every(cell => cell) && !checkWinner();
+    }
+
+    function randomRemoveOne() {
+      const occupied = board.map((v, i) => (v ? i : null)).filter(i => i !== null);
+      if (occupied.length === 0) return;
+      const idx = occupied[Math.floor(Math.random() * occupied.length)];
+      board[idx] = null;
+      const cellDiv = boardElement.querySelector(`.cell[data-index="${idx}"]`);
+      if (cellDiv) {
+        cellDiv.textContent = '';
+        cellDiv.classList.add('removed');
+        setTimeout(() => cellDiv.classList.remove('removed'), 700);
+      }
+      statusElement.textContent = `Draw avoided! Randomly removed a mark from cell ${idx + 1}.`;
     }
 
     function resetGame() {
