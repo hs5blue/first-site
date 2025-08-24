@@ -2,178 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic Tac Toe - Red Black Yellow</title>
+  <title>Cute Game for Nahin 💖</title>
   <style>
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, black, red, yellow);
-      font-family: Arial, sans-serif;
-      color: yellow;
-    }
-    .game-container {
+      margin: 0;
+      background: linear-gradient(to bottom, #ffd6e8, #fff5f7);
+      overflow: hidden;
+      font-family: "Comic Sans MS", cursive, sans-serif;
       text-align: center;
-      background: rgba(0,0,0,0.6);
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(255,255,0,0.6);
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: linear-gradient(to top, #ffe9f0, #fff);
+      border: 4px solid pink;
+      border-radius: 20px;
     }
     h1 {
-      color: red;
-      text-shadow: 2px 2px black;
-    }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 5px;
-      margin: 20px auto;
-      background: linear-gradient(135deg, yellow, red);
-      padding: 8px;
-      border-radius: 12px;
-    }
-    .cell {
-      background: linear-gradient(135deg, yellow, black);
-      border: 3px solid red;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2em;
-      font-weight: bold;
-      cursor: pointer;
-      color: black;
-      transition: transform 0.2s, background 0.2s, color 0.2s;
-      user-select: none;
-      border-radius: 10px;
-    }
-    .cell:hover {
-      transform: scale(1.06);
-      background: linear-gradient(135deg, red, black);
-      color: yellow;
-    }
-    .cell.removed {
-      outline: 3px dashed black;
-      background: linear-gradient(135deg, black, red) !important;
-      color: yellow !important;
-    }
-    #status {
-      font-size: 1.2em;
-      margin-top: 10px;
-      text-shadow: 1px 1px black;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: linear-gradient(135deg, red, yellow);
-      color: black;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 0 8px rgba(255,255,0,0.7);
-    }
-    button:hover {
-      background: linear-gradient(135deg, yellow, red);
-      color: black;
+      color: #d63384;
     }
   </style>
 </head>
 <body>
-  <div class="game-container">
-    <h1>Tic Tac Toe</h1>
-    <div id="status">Player X's Turn</div>
-    <div class="board" id="board"></div>
-    <button onclick="resetGame()">Restart</button>
-  </div>
+  <h1>For My Love Nahin 💕</h1>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
 
   <script>
-    const boardElement = document.getElementById('board');
-    const statusElement = document.getElementById('status');
-    let board = Array(9).fill(null);
-    let currentPlayer = 'X';
-    let gameActive = true;
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    function createBoard() {
-      boardElement.innerHTML = '';
-      board.forEach((cell, index) => {
-        const cellDiv = document.createElement('div');
-        cellDiv.classList.add('cell');
-        cellDiv.dataset.index = index;
-        cellDiv.textContent = cell || '';
-        cellDiv.addEventListener('click', handleMove);
-        boardElement.appendChild(cellDiv);
+    let heart = { x: 180, y: 550, width: 40, height: 40 };
+    let animals = [];
+    let score = 0;
+    let messages = [
+      "You’re my butterfly, Nahin 🦋💖",
+      "You make my heart hop like a bunny 🐇💕",
+      "You’re the song of my bird, Nahin 🐦💘",
+      "My sweetest Zoologist 💕",
+      "Forever mine, Nahin ❤️"
+    ];
+    let currentMsg = "";
+
+    function drawHeart(x, y) {
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x, y - 20, x - 25, y - 20, x - 25, y);
+      ctx.bezierCurveTo(x - 25, y + 20, x, y + 40, x, y + 50);
+      ctx.bezierCurveTo(x, y + 40, x + 25, y + 20, x + 25, y);
+      ctx.bezierCurveTo(x + 25, y - 20, x, y - 20, x, y);
+      ctx.fill();
+    }
+
+    function drawAnimal(animal) {
+      ctx.fillStyle = animal.color;
+      ctx.beginPath();
+      ctx.arc(animal.x, animal.y, animal.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function spawnAnimal() {
+      let colors = ["#ff69b4", "#ffb347", "#77dd77", "#779ecb"];
+      animals.push({
+        x: Math.random() * 360 + 20,
+        y: -20,
+        size: 15,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: 2 + Math.random() * 2
       });
     }
 
-    function handleMove(e) {
-      const index = e.target.dataset.index;
-      if (!gameActive || board[index]) return;
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      board[index] = currentPlayer;
-      e.target.textContent = currentPlayer;
+      // Draw heart
+      drawHeart(heart.x, heart.y);
 
-      if (checkWinner()) {
-        statusElement.textContent = `Player ${currentPlayer} Wins!`;
-        gameActive = false;
-        return;
-      }
+      // Move and draw animals
+      animals.forEach((animal, index) => {
+        animal.y += animal.speed;
+        drawAnimal(animal);
 
-      if (isDraw()) {
-        // Draw rule: randomly remove one existing X or O, then continue
-        randomRemoveOne();
-        // Switch turn to the other player after the draw-avoid action
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        statusElement.textContent += ` Player ${currentPlayer}'s Turn`;
-        return;
-      }
+        // Collision
+        if (
+          animal.x > heart.x - 25 &&
+          animal.x < heart.x + 25 &&
+          animal.y > heart.y - 10 &&
+          animal.y < heart.y + 40
+        ) {
+          animals.splice(index, 1);
+          score++;
+          currentMsg = messages[Math.floor(Math.random() * messages.length)];
+        }
 
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      statusElement.textContent = `Player ${currentPlayer}'s Turn`;
-    }
-
-    function checkWinner() {
-      const winPatterns = [
-        [0,1,2], [3,4,5], [6,7,8], // rows
-        [0,3,6], [1,4,7], [2,5,8], // cols
-        [0,4,8], [2,4,6]           // diagonals
-      ];
-      return winPatterns.some(pattern => {
-        const [a,b,c] = pattern;
-        return board[a] && board[a] === board[b] && board[a] === board[c];
+        // Remove animals if they fall
+        if (animal.y > 600) {
+          animals.splice(index, 1);
+        }
       });
-    }
 
-    function isDraw() {
-      return board.every(cell => cell) && !checkWinner();
-    }
+      // Display score and message
+      ctx.fillStyle = "#d63384";
+      ctx.font = "20px Comic Sans MS";
+      ctx.fillText("Score: " + score, 10, 20);
 
-    function randomRemoveOne() {
-      const occupied = board.map((v, i) => (v ? i : null)).filter(i => i !== null);
-      if (occupied.length === 0) return;
-      const idx = occupied[Math.floor(Math.random() * occupied.length)];
-      board[idx] = null;
-      const cellDiv = boardElement.querySelector(`.cell[data-index="${idx}"]`);
-      if (cellDiv) {
-        cellDiv.textContent = '';
-        cellDiv.classList.add('removed');
-        setTimeout(() => cellDiv.classList.remove('removed'), 700);
+      if (currentMsg) {
+        ctx.fillText(currentMsg, 20, 50);
       }
-      statusElement.textContent = `Draw avoided! Randomly removed a mark from cell ${idx + 1}.`;
+
+      // Win message
+      if (score >= 10) {
+        ctx.fillStyle = "#ff1744";
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillText("I love you, Nahin ❤️", 70, 300);
+        return;
+      }
+
+      requestAnimationFrame(gameLoop);
     }
 
-    function resetGame() {
-      board = Array(9).fill(null);
-      // Randomly pick X or O to start
-      currentPlayer = Math.random() < 0.5 ? 'X' : 'O';
-      gameActive = true;
-      statusElement.textContent = `Player ${currentPlayer}'s Turn`;
-      createBoard();
-    }
+    // Controls
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && heart.x > 30) heart.x -= 20;
+      if (e.key === "ArrowRight" && heart.x < 370) heart.x += 20;
+    });
 
-    resetGame(); // Start game with random player on first load
+    setInterval(spawnAnimal, 1000);
+    gameLoop();
   </script>
 </body>
 </html>
