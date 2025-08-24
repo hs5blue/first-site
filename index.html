@@ -1,259 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoolove Memory — For Nahin 💖</title>
+  <meta charset="UTF-8">
+  <title>How much does Sami love Nahin? 💖</title>
   <style>
-    :root{
-      --bg1:#fff6fb; --bg2:#e9f9ff; --primary:#ff66a3; --accent:#7ad1ff; --text:#5b4b54; --win:#ff7f50;
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #e6f7ff);
+      text-align: center;
+      padding-top: 100px;
+      height: 100vh;
+      overflow: hidden;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 800px at 20% 10%, var(--bg1), transparent),
-                  radial-gradient(1200px 800px at 80% 90%, var(--bg2), transparent),
-                  linear-gradient(180deg, #ffffff, #fdf7ff 60%);
-      color:var(--text);
-      min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px;
+    h1 {
+      color: #ff3385;
     }
-    .game{
-      width:min(900px, 96vw); max-width:900px;
-      background:#fff; border:3px solid #ffd2e7; border-radius:24px; box-shadow:0 20px 50px rgba(255,102,163,.15);
-      padding:18px 18px 26px; position:relative;
+    .btn {
+      display: inline-block;
+      margin: 20px;
+      padding: 15px 25px;
+      font-size: 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff66a3, #ffb3d9);
+      color: white;
+      font-weight: bold;
+      transition: all 0.3s;
+      position: relative;
     }
-    header{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap}
-    h1{margin:6px 0 8px; font-size:clamp(22px, 3vw, 30px); color:var(--primary)}
-    .subtitle{font-size:14px; opacity:.9}
-    .hud{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .pill{
-      background:linear-gradient( to right, #ffe3f1, #e8f7ff); border:1.5px solid #ffd2e7; border-radius:999px; padding:8px 12px; font-weight:600;
+    .btn:hover {
+      transform: scale(1.1);
     }
-    button{
-      border:none; background: linear-gradient(135deg, var(--primary), #ff97c0); color:white; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer; box-shadow:0 8px 18px rgba(255,102,163,.25); transition: transform .05s ease;
+    #runaway {
+      position: absolute;
     }
-    button:active{ transform: translateY(1px); }
-
-    .grid{ 
-      margin-top:16px; 
-      display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; 
+    #message {
+      margin-top: 40px;
+      font-size: 22px;
+      color: #d63384;
+      font-weight: bold;
     }
-    @media (min-width:720px){ .grid{ grid-template-columns: repeat(6, 1fr);} }
-
-    .card{
-      width:100%; aspect-ratio: 3/4; perspective: 900px; 
-    }
-    .inner{
-      position:relative; width:100%; height:100%; transform-style:preserve-3d;
-      transition: transform 400ms; cursor:pointer;
-    }
-    .inner.flipped{ transform: rotateY(180deg); }
-    .face{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:18px; border:2px solid #ffd2e7;
-      backface-visibility:hidden; -webkit-backface-visibility:hidden; box-shadow:inset 0 0 0 2px rgba(255,255,255,.6), 0 10px 20px rgba(0,0,0,.05);
-    }
-    .front{
-      background:linear-gradient(180deg,#fff6fb,#fff); font-size: clamp(36px, 6vw, 52px);
-      transform: rotateY(180deg);
-    }
-    .back{
-      background: radial-gradient(circle at 30% 20%, #ffe9f4, #e7f6ff);
-      font-size: clamp(22px, 5vw, 34px); color:#ff469b; letter-spacing:2px; font-weight:900;
-    }
-
-    .toast{
-      position:fixed; left:50%; top:18px; transform: translateX(-50%);
-      background:#ffffff; border:2px solid #ffd2e7; border-radius:999px; padding:10px 16px; box-shadow:0 12px 30px rgba(0,0,0,.08);
-      opacity:0; pointer-events:none; transition: opacity .3s, transform .3s; font-weight:600;
-    }
-    .toast.show{ opacity:1; transform: translateX(-50%) translateY(4px); }
-
-    .modal{
-      position:fixed; inset:0; display:grid; place-items:center; background: rgba(255, 224, 238, .55); backdrop-filter: blur(4px);
-      opacity:0; pointer-events:none; transition: opacity .25s ease;
-    }
-    .modal.open{ opacity:1; pointer-events:auto; }
-    .card-win{
-      width:min(560px, 92vw); background:#fff; border:3px solid #ffd2e7; border-radius:22px; padding:20px; text-align:center; box-shadow:0 20px 50px rgba(255,102,163,.18);
-    }
-    .big{ font-size: clamp(24px, 3.2vw, 30px); color:var(--win); margin:8px 0 4px; }
-    .msg{ font-size: clamp(16px, 2.4vw, 18px); }
   </style>
 </head>
 <body>
-  <div class="game" role="application" aria-label="Zoolove Memory Game for Nahin">
-    <header>
-      <div>
-        <h1>🧠 Zoolove Memory — For Nahin</h1>
-        <div class="subtitle">Flip cards, match the animals, and unlock cute zoology love notes 💕</div>
-      </div>
-      <div class="hud">
-        <div class="pill" id="moves">Moves: 0</div>
-        <div class="pill" id="time">Time: 0s</div>
-        <button id="restart">Restart</button>
-      </div>
-    </header>
+  <h1>💘 How much does Sami love Nahin? 💘</h1>
 
-    <div class="grid" id="grid" aria-live="polite"></div>
-  </div>
+  <button class="btn" id="onePercent">1%</button>
+  <button class="btn" id="infinity">∞ Infinity</button>
+  <button class="btn" id="runaway">Doesn't love you 😢</button>
 
-  <div class="toast" id="toast">You matched 🦋 — "You make my heart flutter, Nahin!"</div>
-
-  <div class="modal" id="winModal" aria-modal="true" role="dialog">
-    <div class="card-win">
-      <div style="font-size:48px">✨💖✨</div>
-      <div class="big">All pairs matched!</div>
-      <p class="msg" id="finalMsg">Nahin, you’re my favorite finding in the entire animal kingdom. 🐾 Forever yours. </p>
-      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
-        <button id="playAgain">Play again</button>
-        <button id="shareBtn" title="Copy a sweet message to share">Copy love note</button>
-      </div>
-    </div>
-  </div>
+  <div id="message"></div>
 
   <script>
-    // --- Game Data ---
-    const pairs = [
-      {emoji:'🦋', note:'You make my heart flutter, Nahin!'},
-      {emoji:'🐸', note:'I’m toad-ally into you!'},
-      {emoji:'🐝', note:'You’re the bee’s knees, my Zoologist.'},
-      {emoji:'🐢', note:'Slow or fast, I’ll match your pace.'},
-      {emoji:'🐼', note:'I can’t bear to be without you.'},
-      {emoji:'🐧', note:'Like penguins, I choose you for life.'},
-      {emoji:'🦊', note:'Fur real, you’re foxy and brilliant!'},
-      {emoji:'🐨', note:'I’m koala‑fied to love you forever.'}
-    ];
+    const oneBtn = document.getElementById("onePercent");
+    const infBtn = document.getElementById("infinity");
+    const runBtn = document.getElementById("runaway");
+    const msg = document.getElementById("message");
 
-    const gridEl = document.getElementById('grid');
-    const movesEl = document.getElementById('moves');
-    const timeEl = document.getElementById('time');
-    const toastEl = document.getElementById('toast');
-    const restartBtn = document.getElementById('restart');
-    const winModal = document.getElementById('winModal');
-    const playAgainBtn = document.getElementById('playAgain');
-    const shareBtn = document.getElementById('shareBtn');
+    // 1% → becomes 100%
+    oneBtn.addEventListener("click", () => {
+      oneBtn.textContent = "100% ❤️";
+      msg.textContent = "Sami loves Nahin with all his heart!";
+    });
 
-    let deck = [];
-    let first = null, second = null, lock = false;
-    let moves = 0, matched = 0, startTime = null, timerId = null;
+    // Infinity → shows sweet message
+    infBtn.addEventListener("click", () => {
+      msg.textContent = "Sami’s love for Nahin is infinite ♾️💖";
+    });
 
-    function shuffle(array){
-      for(let i=array.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function buildDeck(){
-      const doubled = pairs.flatMap((p,idx)=>[
-        {id: idx+ '-a', emoji:p.emoji, note:p.note},
-        {id: idx+ '-b', emoji:p.emoji, note:p.note}
-      ]);
-      // 16 cards by default; for wider screens we show all 16; for small, still fine.
-      return shuffle(doubled);
-    }
-
-    function cardTemplate(card){
-      return `
-      <div class="card" data-id="${card.id}" aria-label="card" tabindex="0">
-        <div class="inner" data-emoji="${card.emoji}" data-note="${card.note}">
-          <div class="face back">N</div>
-          <div class="face front">${card.emoji}</div>
-        </div>
-      </div>`
-    }
-
-    function render(){
-      gridEl.innerHTML = deck.map(cardTemplate).join('');
-      // Paint back faces with letters that spell N A H I N across the deck subtly
-      const letters = ['N','A','H','I','N'];
-      [...gridEl.querySelectorAll('.back')].forEach((el,i)=>{ el.textContent = letters[i%letters.length]; });
-
-      // Attach events
-      gridEl.querySelectorAll('.card').forEach(cardEl=>{
-        cardEl.addEventListener('click', ()=> flip(cardEl));
-        cardEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); flip(cardEl);} });
-      });
-    }
-
-    function startTimer(){
-      startTime = Date.now();
-      timerId = setInterval(()=>{
-        const t = Math.floor((Date.now()-startTime)/1000);
-        timeEl.textContent = `Time: ${t}s`;
-      }, 500);
-    }
-
-    function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
-
-    function showToast(text){
-      toastEl.textContent = text;
-      toastEl.classList.add('show');
-      setTimeout(()=> toastEl.classList.remove('show'), 1400);
-    }
-
-    function flip(cardEl){
-      if(lock) return;
-      const inner = cardEl.querySelector('.inner');
-      if(inner.classList.contains('matched') || inner.classList.contains('flipped')) return;
-
-      if(!startTime) startTimer();
-
-      inner.classList.add('flipped');
-      if(!first){ first = inner; return; }
-      if(first === inner) return; // clicking same
-
-      second = inner; lock = true; moves++; movesEl.textContent = `Moves: ${moves}`;
-
-      const a = first.getAttribute('data-emoji');
-      const b = second.getAttribute('data-emoji');
-
-      if(a===b){
-        // match
-        setTimeout(()=>{
-          first.classList.add('matched');
-          second.classList.add('matched');
-          const note = first.getAttribute('data-note');
-          showToast(`${a} ${note}`);
-          matched += 2; first=null; second=null; lock=false;
-          if(matched === deck.length){ win(); }
-        }, 280);
-      } else {
-        // no match
-        setTimeout(()=>{
-          first.classList.remove('flipped');
-          second.classList.remove('flipped');
-          first=null; second=null; lock=false;
-        }, 650);
-      }
-    }
-
-    function win(){
-      stopTimer();
-      const seconds = Math.floor((Date.now()-startTime)/1000);
-      const msg = `Nahin, you matched every pair in ${seconds}s with ${moves} moves. In the vast world of Zoology, you’re my most beautiful discovery. ❤️`;
-      document.getElementById('finalMsg').textContent = msg;
-      winModal.classList.add('open');
-    }
-
-    function restart(){
-      deck = buildDeck(); moves = 0; matched = 0; startTime = null; movesEl.textContent = 'Moves: 0'; timeEl.textContent='Time: 0s';
-      stopTimer();
-      render();
-    }
-
-    restart();
-
-    restartBtn.addEventListener('click', ()=>{ winModal.classList.remove('open'); restart(); });
-    playAgainBtn.addEventListener('click', ()=>{ winModal.classList.remove('open'); restart(); });
-
-    shareBtn.addEventListener('click', async ()=>{
-      const text = 'I just played your Zoolove Memory game and thought of you, Nahin ❤️';
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast('Love note copied! 💌');
-      } catch(e){ showToast('Copied a note to share! 💌'); }
+    // Runaway button
+    runBtn.addEventListener("mouseover", () => {
+      const x = Math.random() * (window.innerWidth - runBtn.offsetWidth - 50);
+      const y = Math.random() * (window.innerHeight - runBtn.offsetHeight - 50);
+      runBtn.style.left = x + "px";
+      runBtn.style.top = y + "px";
     });
   </script>
 </body>
