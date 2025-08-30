@@ -9,8 +9,8 @@
   <style>
     body { display: flex; flex-direction: column; align-items: center; font-family: Arial; background: #fdfdfb; }
     #board { width: 400px; margin: 20px; }
-    .board-b72b1 { background-color: #f0e5cf; } /* cream */
-    .board-63f37 { background-color: #4a90e2; } /* blue */
+    .white-1e1d7 { background-color: #f0e5cf !important; } /* cream */
+    .black-3c85d { background-color: #4a90e2 !important; } /* blue */
     #timer { font-size: 20px; margin: 10px; }
     #quote { margin-top: 15px; font-style: italic; color: #333; text-align: center; max-width: 400px; }
   </style>
@@ -36,6 +36,7 @@
       draggable: true,
       position: 'start',
       onDrop: onDrop,
+      onSnapEnd: onSnapEnd,
       pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
     });
 
@@ -71,7 +72,7 @@
         if(game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()){
           twistTheGame();
         }
-      }, 300);
+      }, 200);
     }
 
     function twistTheGame(){
