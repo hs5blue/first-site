@@ -1,103 +1,183 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Funny Twist Chess</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" />
-  <style>
-    body { display: flex; flex-direction: column; align-items: center; font-family: Arial; background: #fdfdfb; }
-    #board { width: 400px; margin: 20px; }
-    .white-1e1d7 { background-color: #f0e5cf !important; } /* cream */
-    .black-3c85d { background-color: #4a90e2 !important; } /* blue */
-    #timer { font-size: 20px; margin: 10px; }
-    #quote { margin-top: 15px; font-style: italic; color: #333; text-align: center; max-width: 400px; }
-  </style>
-</head>
-<body>
-  <h2>Funny Twist Chess</h2>
-  <div id="timer">White: 05:00 | Black: 05:00</div>
-  <div id="board"></div>
-  <div id="quote">Game Start! Don’t mess it up 😉</div>
+import pygame
+import sys
+import random
+import math
 
-  <script>
-    const funnyQuotes = [
-      "That’s illegal in 47 countries!",
-      "Did you just move with Google Maps?",
-      "Checkmate? More like check-wait!",
-      "My grandma moves faster than that!",
-      "Are you playing chess or Minesweeper?",
-      "Congratulations, you just invented a new blunder!"
-    ];
+# Initialize pygame
+pygame.init()
 
-    const game = new Chess();
-    const board = Chessboard('board', {
-      draggable: true,
-      position: 'start',
-      onDrop: onDrop,
-      onSnapEnd: onSnapEnd,
-      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-    });
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Biology Love Meter")
 
-    let whiteTime = 300; // 5 min
-    let blackTime = 300;
-    let currentTurn = 'w';
-    let timerInterval = setInterval(updateTimer, 1000);
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 200, 0)
+RED = (200, 0, 0)
+BLUE = (0, 120, 255)
+LIGHT_BLUE = (173, 216, 230)
+GRAY = (200, 200, 200)
+DARK_GREEN = (0, 150, 0)
+LIGHT_RED = (255, 150, 150)
 
-    function updateTimer(){
-      if(game.game_over()) return;
-      if(currentTurn === 'w') whiteTime--; else blackTime--;
-      document.getElementById("timer").textContent = `White: ${formatTime(whiteTime)} | Black: ${formatTime(blackTime)}`;
-      if(whiteTime <= 0 || blackTime <= 0){
-        alert("Time's up! " + (whiteTime <= 0 ? "Black wins!" : "White wins!"));
-        clearInterval(timerInterval);
-      }
-    }
+# Fonts
+title_font = pygame.font.SysFont("Arial", 48, bold=True)
+button_font = pygame.font.SysFont("Arial", 28)
+message_font = pygame.font.SysFont("Arial", 36, bold=True)
 
-    function formatTime(t){
-      let m = Math.floor(t/60).toString().padStart(2,'0');
-      let s = (t%60).toString().padStart(2,'0');
-      return `${m}:${s}`;
-    }
+# Button class
+class Button:
+    def __init__(self, x, y, width, height, text, color, hover_color):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.color = color
+        self.hover_color = hover_color
+        self.original_color = color
+        self.is_hovered = False
+        
+    def draw(self, surface):
+        color = self.hover_color if self.is_hovered else self.color
+        pygame.draw.rect(surface, color, self.rect, border_radius=12)
+        pygame.draw.rect(surface, BLACK, self.rect, 3, border_radius=12)
+        
+        text_surface = button_font.render(self.text, True, BLACK)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+        
+    def check_hover(self, pos):
+        self.is_hovered = self.rect.collidepoint(pos)
+        return self.is_hovered
+        
+    def check_click(self, pos, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            return self.rect.collidepoint(pos)
+        return False
 
-    function onDrop(source, target){
-      let move = game.move({ from: source, to: target, promotion: 'q' });
-      if(move === null) return 'snapback';
+# Runaway button class
+class RunawayButton(Button):
+    def __init__(self, x, y, width, height, text, color, hover_color):
+        super().__init__(x, y, width, height, text, color, hover_color)
+        self.speed = 5
+        self.direction = [0, 0]
+        self.set_random_direction()
+        
+    def set_random_direction(self):
+        angle = random.uniform(0, 2 * math.pi)
+        self.direction = [math.cos(angle), math.sin(angle)]
+        
+    def update(self, mouse_pos):
+        # Check if mouse is near the button
+        dx = mouse_pos[0] - self.rect.centerx
+        dy = mouse_pos[1] - self.rect.centery
+        distance = math.sqrt(dx*dx + dy*dy)
+        
+        if distance < 200:  # If mouse is close, run away
+            # Move in the current direction
+            self.rect.x += self.direction[0] * self.speed
+            self.rect.y += self.direction[1] * self.speed
+            
+            # Bounce off walls
+            if self.rect.left < 0 or self.rect.right > WIDTH:
+                self.direction[0] *= -1
+                self.rect.x += self.direction[0] * self.speed
+                
+            if self.rect.top < 0 or self.rect.bottom > HEIGHT:
+                self.direction[1] *= -1
+                self.rect.y += self.direction[1] * self.speed
+                
+            # Occasionally change direction
+            if random.random() < 0.02:
+                self.set_random_direction()
 
-      currentTurn = game.turn();
-      document.getElementById("quote").textContent = funnyQuotes[Math.floor(Math.random()*funnyQuotes.length)];
+# Create buttons
+button_width, button_height = 200, 60
+button_y = 350
+button_spacing = 30
 
-      setTimeout(() => {
-        if(game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()){
-          twistTheGame();
-        }
-      }, 200);
-    }
+button1 = Button(WIDTH//2 - button_width - button_spacing, button_y, 
+                button_width, button_height, "1%", GREEN, DARK_GREEN)
 
-    function twistTheGame(){
-      let pieces = game.board();
-      let pawns = [];
-      for(let r=0;r<8;r++){
-        for(let c=0;c<8;c++){
-          if(pieces[r][c] && pieces[r][c].type === 'p'){
-            pawns.push({square: String.fromCharCode(97+c)+(8-r), color: pieces[r][c].color});
-          }
-        }
-      }
-      if(pawns.length>0){
-        let luckyPawn = pawns[Math.floor(Math.random()*pawns.length)];
-        let upgrade = ['q','r','b','n'][Math.floor(Math.random()*4)];
-        game.remove(luckyPawn.square);
-        game.put({type: upgrade, color: luckyPawn.color}, luckyPawn.square);
-        board.position(game.fen());
-        document.getElementById("quote").textContent = `Plot twist! A pawn just evolved into a ${upgrade.toUpperCase()} 😆`;
-      }
-    }
+button2 = Button(WIDTH//2 + button_spacing, button_y, 
+                button_width, button_height, "100%", BLUE, LIGHT_BLUE)
 
-    function onSnapEnd(){
-      board.position(game.fen());
-    }
-  </script>
-</body>
-</html>
+button3 = RunawayButton(WIDTH//2 - button_width//2, button_y + button_height + button_spacing, 
+                       button_width, button_height, "I fucking don't", RED, LIGHT_RED)
+
+# Game state
+message = ""
+message_timer = 0
+
+# Main game loop
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    mouse_pos = pygame.mouse.get_pos()
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+            
+        # Check button clicks
+        if button1.check_click(mouse_pos, event):
+            button1.text = "100005"
+            message = "Wow! That's specific!"
+            message_timer = 120  # Show message for 2 seconds
+            
+        if button2.check_click(mouse_pos, event):
+            message = "Biology loves you too!"
+            message_timer = 120
+            
+        if button3.check_click(mouse_pos, event):
+            message = "Hey! Stop running away!"
+            message_timer = 120
+    
+    # Update runaway button
+    button3.update(mouse_pos)
+    
+    # Check hovers
+    button1.check_hover(mouse_pos)
+    button2.check_hover(mouse_pos)
+    button3.check_hover(mouse_pos)
+    
+    # Decrease message timer
+    if message_timer > 0:
+        message_timer -= 1
+    
+    # Draw everything
+    screen.fill(WHITE)
+    
+    # Draw title
+    title_text = title_font.render("How much do you love biology?", True, BLACK)
+    title_rect = title_text.get_rect(center=(WIDTH//2, 150))
+    screen.blit(title_text, title_rect)
+    
+    # Draw buttons
+    button1.draw(screen)
+    button2.draw(screen)
+    button3.draw(screen)
+    
+    # Draw message if any
+    if message_timer > 0:
+        message_text = message_font.render(message, True, BLACK)
+        message_rect = message_text.get_rect(center=(WIDTH//2, 250))
+        screen.blit(message_text, message_rect)
+    
+    # Draw biology-themed background elements
+    pygame.draw.ellipse(screen, GREEN, (100, 80, 60, 100))  # Leaf
+    pygame.draw.ellipse(screen, GREEN, (640, 80, 60, 100))  # Leaf
+    
+    # Draw DNA strand
+    for i in range(10):
+        y_pos = 500 + i * 15
+        pygame.draw.line(screen, BLUE, (WIDTH//2 - 30, y_pos), (WIDTH//2 + 30, y_pos + 10), 2)
+        pygame.draw.circle(screen, GREEN, (WIDTH//2 - 30, y_pos), 5)
+        pygame.draw.circle(screen, RED, (WIDTH//2 + 30, y_pos + 10), 5)
+    
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
