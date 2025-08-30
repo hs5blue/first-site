@@ -2,80 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>How much does Sami love Nahin? 💖</title>
+  <title>Funny Twist Chess</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" />
   <style>
-    body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: linear-gradient(135deg, #ffe6f0, #e6f7ff);
-      text-align: center;
-      padding-top: 100px;
-      height: 100vh;
-      overflow: hidden;
-    }
-    h1 {
-      color: #ff3385;
-    }
-    .btn {
-      display: inline-block;
-      margin: 20px;
-      padding: 15px 25px;
-      font-size: 20px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      background: linear-gradient(135deg, #ff66a3, #ffb3d9);
-      color: white;
-      font-weight: bold;
-      transition: all 0.3s;
-      position: relative;
-    }
-    .btn:hover {
-      transform: scale(1.1);
-    }
-    #runaway {
-      position: absolute;
-    }
-    #message {
-      margin-top: 40px;
-      font-size: 22px;
-      color: #d63384;
-      font-weight: bold;
-    }
+    body { display: flex; flex-direction: column; align-items: center; font-family: Arial; background: #fdfdfb; }
+    #board { width: 400px; margin: 20px; }
+    .board-b72b1 { background-color: #f0e5cf; } /* cream */
+    .board-63f37 { background-color: #4a90e2; } /* blue */
+    #timer { font-size: 20px; margin: 10px; }
+    #quote { margin-top: 15px; font-style: italic; color: #333; text-align: center; max-width: 400px; }
   </style>
 </head>
 <body>
-  <h1>💘 How much does Sami love Nahin? 💘</h1>
-
-  <button class="btn" id="onePercent">1%</button>
-  <button class="btn" id="infinity">∞ Infinity</button>
-  <button class="btn" id="runaway">Doesn't love you 😢</button>
-
-  <div id="message"></div>
+  <h2>Funny Twist Chess</h2>
+  <div id="timer">White: 05:00 | Black: 05:00</div>
+  <div id="board"></div>
+  <div id="quote">Game Start! Don’t mess it up 😉</div>
 
   <script>
-    const oneBtn = document.getElementById("onePercent");
-    const infBtn = document.getElementById("infinity");
-    const runBtn = document.getElementById("runaway");
-    const msg = document.getElementById("message");
+    const funnyQuotes = [
+      "That’s illegal in 47 countries!",
+      "Did you just move with Google Maps?",
+      "Checkmate? More like check-wait!",
+      "My grandma moves faster than that!",
+      "Are you playing chess or Minesweeper?",
+      "Congratulations, you just invented a new blunder!"
+    ];
 
-    // 1% → becomes 100%
-    oneBtn.addEventListener("click", () => {
-      oneBtn.textContent = "100% ❤️";
-      msg.textContent = "Sami loves Nahin with all his heart!";
+    const game = new Chess();
+    const board = Chessboard('board', {
+      draggable: true,
+      position: 'start',
+      onDrop: onDrop,
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
     });
 
-    // Infinity → shows sweet message
-    infBtn.addEventListener("click", () => {
-      msg.textContent = "Sami’s love for Nahin is infinite ♾️💖";
-    });
+    let whiteTime = 300; // 5 min
+    let blackTime = 300;
+    let currentTurn = 'w';
+    let timerInterval = setInterval(updateTimer, 1000);
 
-    // Runaway button
-    runBtn.addEventListener("mouseover", () => {
-      const x = Math.random() * (window.innerWidth - runBtn.offsetWidth - 50);
-      const y = Math.random() * (window.innerHeight - runBtn.offsetHeight - 50);
-      runBtn.style.left = x + "px";
-      runBtn.style.top = y + "px";
-    });
+    function updateTimer(){
+      if(game.game_over()) return;
+      if(currentTurn === 'w') whiteTime--; else blackTime--;
+      document.getElementById("timer").textContent = `White: ${formatTime(whiteTime)} | Black: ${formatTime(blackTime)}`;
+      if(whiteTime <= 0 || blackTime <= 0){
+        alert("Time's up! " + (whiteTime <= 0 ? "Black wins!" : "White wins!"));
+        clearInterval(timerInterval);
+      }
+    }
+
+    function formatTime(t){
+      let m = Math.floor(t/60).toString().padStart(2,'0');
+      let s = (t%60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    function onDrop(source, target){
+      let move = game.move({ from: source, to: target, promotion: 'q' });
+      if(move === null) return 'snapback';
+
+      currentTurn = game.turn();
+      document.getElementById("quote").textContent = funnyQuotes[Math.floor(Math.random()*funnyQuotes.length)];
+
+      setTimeout(() => {
+        if(game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()){
+          twistTheGame();
+        }
+      }, 300);
+    }
+
+    function twistTheGame(){
+      let pieces = game.board();
+      let pawns = [];
+      for(let r=0;r<8;r++){
+        for(let c=0;c<8;c++){
+          if(pieces[r][c] && pieces[r][c].type === 'p'){
+            pawns.push({square: String.fromCharCode(97+c)+(8-r), color: pieces[r][c].color});
+          }
+        }
+      }
+      if(pawns.length>0){
+        let luckyPawn = pawns[Math.floor(Math.random()*pawns.length)];
+        let upgrade = ['q','r','b','n'][Math.floor(Math.random()*4)];
+        game.remove(luckyPawn.square);
+        game.put({type: upgrade, color: luckyPawn.color}, luckyPawn.square);
+        board.position(game.fen());
+        document.getElementById("quote").textContent = `Plot twist! A pawn just evolved into a ${upgrade.toUpperCase()} 😆`;
+      }
+    }
+
+    function onSnapEnd(){
+      board.position(game.fen());
+    }
   </script>
 </body>
 </html>
